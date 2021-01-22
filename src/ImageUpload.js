@@ -1,18 +1,13 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
-
+import { Modal, Button } from 'antd';
 import Cropper from 'react-cropper' // 引入Cropper
 import 'cropperjs/dist/cropper.css' // 引入Cropper对应的css
+import './ImageUpload.scss'
+import 'antd/dist/antd.css'
+const MAX_FILE_SIZE = 5 * 1024 * 1024 // 文件最大限制为5M
 
-import './ClassCropperModal.scss'
-
-export default class ClassCropperModal extends Component {
-  static propTypes = {
-    uploadedImageFile: PropTypes.object.isRequired,
-    onClose: PropTypes.func.isRequired,
-    onSubmit: PropTypes.func.isRequired,
-  }
-
+class ClassCropperModal extends Component {
   constructor(props) {
     super(props)
     this.state = {
@@ -74,7 +69,7 @@ export default class ClassCropperModal extends Component {
                 // Cropper.js options
                 viewMode={1}
                 zoomable={false}
-                aspectRatio={1} // 固定为1:1  可以自己设置比例, 默认情况为自由比例
+                aspectRatio={1.6} // 固定为1:1  可以自己设置比例, 默认情况为自由比例
                 guides={false}
                 preview=".cropper-preview"
               />
@@ -84,12 +79,97 @@ export default class ClassCropperModal extends Component {
             </div>
           </div>
           <div className="button-row">
-            <div className="submit-button" onClick={this.handleSubmit}>
-              点击提交
-            </div>
+            <Button>取消</Button>
+            <Button onClick={this.handleSubmit} type="primary">提交</Button>
           </div>
         </div>
+      </div> 
+    )
+  }
+}
+
+ClassCropperModal.propTypes = {
+  uploadedImageFile: PropTypes.object.isRequired,
+  onClose: PropTypes.func.isRequired,
+  onSubmit: PropTypes.func.isRequired,
+}
+
+class ImageUpload extends Component {
+  state = {
+    classModalVisible: false,
+    classModalFile: null,
+    classResultImgUrl: null,
+  }
+
+  handleClassFileChange = e => {
+    const file = e.target.files[0]
+
+    if (file) {
+      if (file.size <= MAX_FILE_SIZE) {
+        this.setState(
+          {
+            classModalFile: file // 先把上传的文件暂存在state中
+          },
+          () => {
+            this.setState({
+              classModalVisible: true // 然后弹出modal
+            })
+          }
+        )
+      } else {
+        console.log('文件过大')
+      }
+    }
+  }
+
+  handleGetResultImgUrl = key => blob => {
+    const str = URL.createObjectURL(blob)
+    this.setState({
+      [key]: str
+    })
+  }
+
+  render() {
+    const {
+      classModalVisible,
+      classModalFile,
+      classResultImgUrl,
+    } = this.state
+    return (
+      <div className="app">
+        <div className="half-area">
+          <label className="upload-input-label">
+            <div className="img-container">
+              {classResultImgUrl && (
+                <img
+                  className="img"
+                  src={classResultImgUrl}
+                  alt="classResultImgUrl"
+                />
+              )}
+            </div>
+            <input
+              type="file"
+              accept="image/jpeg,image/jpg,image/png"
+              className="base-upload-input"
+              onChange={this.handleClassFileChange}
+            />
+          </label>
+          
+        </div>
+
+        {classModalVisible && (
+          <ClassCropperModal
+            uploadedImageFile={classModalFile}
+            onClose={() => {
+              this.setState({ classModalVisible: false })
+            }}
+            onSubmit={this.handleGetResultImgUrl('classResultImgUrl')}
+          />
+        )}
       </div>
     )
   }
 }
+
+export default ImageUpload
