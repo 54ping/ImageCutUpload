@@ -1,1 +1,1 @@
-This is the code of learning react-cropper
+# 基于antd的图片裁剪组件

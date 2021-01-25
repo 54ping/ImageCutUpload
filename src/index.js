@@ -1,12 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
-import ImageUpload from './ImageUpload';
-import * as serviceWorker from './serviceWorker';
+import UploadImage from './UploadImage';
 
-ReactDOM.render(<ImageUpload />, document.getElementById('root'));
+ReactDOM.render(<UploadImage />, document.getElementById('root'));
 
-// If you want your app to work offline and load faster, you can change
-// unregister() to register() below. Note this comes with some pitfalls.
-// Learn more about service workers: https://bit.ly/CRA-PWA
-serviceWorker.unregister();
