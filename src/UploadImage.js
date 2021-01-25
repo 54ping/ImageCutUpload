@@ -1,48 +1,64 @@
 import React, { useState } from 'react';
-import { Upload } from 'antd';
+import { Upload,Modal } from 'antd';
 import ImgCrop from 'antd-img-crop';
 
-const UploadImage = () => {
-  const [fileList, setFileList] = useState([
-    {
-      uid: '-1',
-      name: 'image.png',
-      status: 'done',
-      url: 'https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png',
-    },
-  ]);
 
+function getBase64(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = error => reject(error);
+    });
+  }
+const UploadImage = () => {
+    
+  const [fileList, setFileList] = useState([])
+  const [previewVisible, setPreviewVisible] = useState(false)
+  const [previewTitle, setPreviewTitle] = useState('')
+  const [previewImage, setPreviewImage] = useState('')
+  
+  
+
+  const handleCancel = () => setPreviewVisible(false);
   const onChange = ({ fileList: newFileList }) => {
     setFileList(newFileList);
   };
 
-  const onPreview = async file => {
-    let src = file.url;
-    if (!src) {
-      src = await new Promise(resolve => {
-        const reader = new FileReader();
-        reader.readAsDataURL(file.originFileObj);
-        reader.onload = () => resolve(reader.result);
-      });
+  const handlePreview = async file => {
+    if (!file.url && !file.preview) {
+      file.preview = await getBase64(file.originFileObj);
     }
-    const image = new Image();
-    image.src = src;
-    const imgWindow = window.open(src);
-    imgWindow.document.write(image.outerHTML);
+
+    setPreviewImage(file.url || file.preview)
+    setPreviewVisible(true)
+    setPreviewTitle(file.name || file.url.substring(file.url.lastIndexOf('/') + 1))
   };
 
+
   return (
-    <ImgCrop rotate>
+      <>
+    <ImgCrop rotate={100} modalTitle="裁剪图片">
       <Upload
         action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
         listType="picture-card"
         fileList={fileList}
         onChange={onChange}
-        onPreview={onPreview}
+        onPreview={handlePreview}
       >
-        {fileList.length < 5 && '+ Upload'}
+        {fileList.length < 1 && '+ 点击上传'}
+        
       </Upload>
     </ImgCrop>
+    <Modal
+          visible={previewVisible}
+          title={previewTitle}
+          footer={null}
+          onCancel={handleCancel}
+        >
+          <img alt="example" style={{ width: '100%' }} src={previewImage} />
+        </Modal>
+        </>
   );
 };
 
